@@ -120,25 +120,31 @@ bool ReceiveData(uint32_t &receiveData) {
 }
 
 
-void unpackData(uint32_t data, int &temperature, int &humidity) {
+void unpackData(uint32_t data, uint16_t &temperature, uint16_t &humidity, uint16_t &sound) {
 
     temperature = data & 0xFF;
     humidity    = (data >> 8) & 0xFF;
+    sound = (data >> 16) & 0xFFFF;
+
 }
 
 // Print : 
 
-void DisplayData(int temperature, int humidity) {
+void DisplayData(int temperature, int humidity, int sound) {
 
     lcd.setCursor(0, 0);
-    lcd.print("Temp: ");
+    lcd.print("T:");
     lcd.print(temperature);
-    lcd.print(" C     ");
+    lcd.print("C ");
+
+    lcd.print("H:");
+    lcd.print(humidity);
+    lcd.print("% ");
 
     lcd.setCursor(0, 1);
-    lcd.print("Humi: ");
-    lcd.print(humidity);
-    lcd.print(" %     ");
+    lcd.print("Sound: ");
+    lcd.print(sound);
+    lcd.print("     ");
 }
 
 
@@ -163,9 +169,9 @@ void loop() {
 
     if (ReceiveData(data)) {
 
-        int temp, humi;
+        uint16_t temp, humi, sound;
 
-        unpackData(data, temp, humi);
+        unpackData(data, temp, humi,sound);
 
         Serial.print("Received: ");
         Serial.println((unsigned long)data);
@@ -176,9 +182,12 @@ void loop() {
         Serial.print("Humidity: ");
         Serial.println(humi);
 
-        DisplayData(temp, humi);
+        Serial.print("sound: ");
+        Serial.println(sound);
+
+        DisplayData(temp, humi, sound);
     }
-    else if (millis() - lastWaitPrint >= 2000) {
+    else if (millis() - lastWaitPrint >= 500) {
 
         lastWaitPrint = millis();
         Serial.println("Waiting for Data...");
