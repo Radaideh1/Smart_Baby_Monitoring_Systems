@@ -4,8 +4,12 @@
 #include <CoolixAC.h>
 #include "Secret_File.h"
 
+#include "KY038.h"
 
 
+
+
+// Valriables : 
 
 #define DHT_Type DHT11
 
@@ -24,7 +28,7 @@ const unsigned long RECONNECT_INTERVAL = 2000;
 unsigned long previousMillis          = 0;
 unsigned long previousReconnectMillis = 0;
 
-
+// Object : 
 
 
 WiFiClient client;
@@ -33,7 +37,10 @@ CoolixAC ac(IR_PIN);
 
 DHT dht(DHT_PIN, DHT_Type);
 
+KY038 ky(A0);
 
+
+// WiFi and Connection : 
 
 void connect_WiFi() {
 
@@ -51,8 +58,6 @@ void connect_WiFi() {
     Serial.println(WiFi.localIP());
 }
 
-
-
 void connect_TCP_Server() {
 
     if (client.connect(serverIP, serverPort)) {
@@ -66,7 +71,6 @@ void connect_TCP_Server() {
         Serial.println("Connection Failed (TCP)!");
     }
 }
-
 
 void check_TCP_Connection() {
 
@@ -93,7 +97,7 @@ void check_TCP_Connection() {
 
 
 
-
+// Setup Function : 
 void setup_IR() {
 
     ac.begin();
@@ -101,11 +105,12 @@ void setup_IR() {
 
 
 
-
-uint32_t packData(uint8_t temperature, uint8_t humidity) {
+// Function : 
+uint32_t packData(uint8_t temperature, uint8_t humidity,uint16_t sound) {
 
     return ((uint32_t)temperature) |
-           ((uint32_t)humidity << 8);
+           ((uint32_t)humidity << 8) | 
+           ((uint32_t)sound << 16);
 }
 
 
@@ -113,6 +118,7 @@ bool Read_Data(uint32_t &AllData) {
 
     float temperature = dht.readTemperature();
     float humidity    = dht.readHumidity();
+    uint16_t  sound = (uint16_t )ky.get_value();
 
     if (isnan(temperature) || isnan(humidity)) {
         Serial.println("DHT Reading Failed!");
@@ -125,11 +131,10 @@ bool Read_Data(uint32_t &AllData) {
     if (humidity < 0)      humidity = 0;
     if (humidity > 100)    humidity = 100;
 
-    AllData = packData((uint8_t)temperature, (uint8_t)humidity);
+    AllData = packData((uint8_t)temperature, (uint8_t)humidity,(uint16_t)sound);
 
     return true;
 }
-
 
 void sendData(uint32_t Data) {
 
@@ -146,10 +151,12 @@ void sendData(uint32_t Data) {
 }
 
 
+// Print : 
 void Print_Data(uint32_t Data) {
 
     uint8_t temperature = Data & 0xFF;
     uint8_t humidity    = (Data >> 8) & 0xFF;
+    uint16_t sound = (Data >> 16) & 0xFFFF;
 
     Serial.println("------- Sensor Data -------");
 
@@ -161,10 +168,13 @@ void Print_Data(uint32_t Data) {
     Serial.print(humidity);
     Serial.println(" %");
 
+    Serial.print("Sound: ");
+    Serial.println(sound);
+
     Serial.println("---------------------------");
 }
 
-
+// Main : 
 void setup() {
 
     Serial.begin(115200);
@@ -201,4 +211,5 @@ void loop() {
             }
         }
     }
+    
 }
