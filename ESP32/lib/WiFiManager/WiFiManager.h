@@ -1,8 +1,13 @@
-#ifndef WIFIMANAGER_H
-#define WIFIMANAGER_H
-#include <WiFi.h>
+#ifdef ESP32
+    #include <WiFi.h>
+#elif defined(ESP8266)
+    #include <ESP8266WiFi.h>
+#else
+    #error "Unsupported board"
+#endif
 
 
+class DataManager;
 
 class WiFiManager {
 friend class DataManager;
@@ -31,10 +36,3 @@ private:
 
 
 };
-
-
-
-
-
-#endif
-
