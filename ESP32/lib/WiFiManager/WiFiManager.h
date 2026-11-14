@@ -5,6 +5,7 @@
 
 
 class WiFiManager {
+friend class DataManager;
 public:
     WiFiManager(const char* ssid, const char * password , const uint16_t serverPort);
 

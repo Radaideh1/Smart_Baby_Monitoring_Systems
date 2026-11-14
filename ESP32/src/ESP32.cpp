@@ -1,7 +1,12 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <LiquidCrystal_I2C.h>
+
+// Class i made : 
 #include "secrets.h"
+#include "WiFiManager.h"
+#include "DataManager.h"
+
 
 
 
@@ -120,6 +125,7 @@ void setup_Buzzer(){
 
 // Function : 
 
+// DONE 
 bool ReceiveData(uint32_t &receiveData) {
 
     if (client.connected() && client.available()) {
@@ -140,6 +146,8 @@ bool ReceiveData(uint32_t &receiveData) {
     return false;
 }
 
+
+
 void unpackData(uint32_t data, uint16_t &temperature, uint16_t &humidity, uint16_t &sound) {
 
     temperature = data & 0xFF;
@@ -148,7 +156,7 @@ void unpackData(uint32_t data, uint16_t &temperature, uint16_t &humidity, uint16
 
 }
 
-
+// ================
 enChildScreamLevel ChildScreamingLevel(uint16_t sound) {
 
     if (sound <= 50) {
