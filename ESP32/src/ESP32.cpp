@@ -1,7 +1,11 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <LiquidCrystal_I2C.h>
-#include "Secret_File.h"
+#include "secrets.h"
+
+
+
+
 // Enums : 
 enum enChildScreamLevel{
 Normal = 0  , Suspicious = 1, Crying = 2
@@ -12,9 +16,10 @@ enum enSoundtones{
 };
 
 // Variables : 
-const char* ssid     = My_SSID;
-const char* password = My_PAASSWORD;
-const uint16_t serverPort = 8080;
+const char* ssid     = My_SSID;// done 
+const char* password = MY_PASSWORD; // done 
+const uint16_t serverPort = 8080;// done 
+
 const char* soundCases[3] = {"Normal","Suspicious","Crying"};
 const int Buzzer_PIn = 13;
 unsigned long lastWaitPrint = 0;
@@ -23,19 +28,21 @@ unsigned long lastWaitPrint = 0;
 
 // Objects : 
 
-WiFiServer server(serverPort);
-WiFiClient client;
+WiFiServer server(serverPort); // DONE 
+WiFiClient client;// DONE 
+
+
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 
-// WiFi and Conniction : 
+// WiFi and Conniction : //done 
 
 void connect_WiFi() {
 
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
 
-    Serial.println("Connecting to WiFi");
+    Serial.print("Connecting to WiFi");
 
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
@@ -87,6 +94,7 @@ void check_TCP_Connection() {
         }
     }
 }
+// =============================
 
 // setup Funtion : 
 void setup_lcd() {
