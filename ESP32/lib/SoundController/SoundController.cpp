@@ -1,12 +1,38 @@
 #include "SoundController.h"
 
+// ---- Melodies (frequency in Hz, 0 = pause) ----
+struct Note {
+    uint16_t freq;
+    uint16_t duration;   // ms
+};
+
+// Gentle two-note chime, then a pause
+static const Note MODERATE_MELODY[] = {
+    {523, 250},   // C5
+    {659, 350},   // E5
+    {0,   1200}   // pause
+};
+
+// Three-note rising chime, faster, with a shorter pause
+static const Note STRONG_MELODY[] = {
+    {659, 180},   // E5
+    {784, 180},   // G5
+    {988, 300},   // B5
+    {0,   500}    // pause
+};
+
+static const uint8_t MODERATE_LEN = sizeof(MODERATE_MELODY) / sizeof(Note);
+static const uint8_t STRONG_LEN   = sizeof(STRONG_MELODY)   / sizeof(Note);
+
 SoundController::SoundController(int buzzer_pin)
     : _buzzerPin(buzzer_pin),
       _isPlaying(false),
       _mode(Moderate),
       _duration(0),
       _startTime(0),
-      _lastBeepTime(0) {
+      _noteIndex(0),
+      _noteStartTime(0),
+      _notePlaying(false) {
 }
 
 void SoundController::begin() {
@@ -14,18 +40,18 @@ void SoundController::begin() {
 }
 
 void SoundController::PlayAlert(enSoundModes mode, uint32_t duration) {
-    _mode         = mode;
-    _duration     = duration;
-    _startTime    = millis();
-    _isPlaying    = true;
+    _mode      = mode;
+    _duration  = duration;
+    _startTime = millis();
+    _isPlaying = true;
 
-    // Trigger the first beep immediately
-    _lastBeepTime = millis();
-    tone(_buzzerPin, _getFrequency(mode), _getBeepLength(mode));
+    _noteIndex = 0;
+    _startNote();
 }
 
 void SoundController::StopAlert() {
-    _isPlaying = false;
+    _isPlaying   = false;
+    _notePlaying = false;
     noTone(_buzzerPin);
 }
 
@@ -38,30 +64,33 @@ void SoundController::Update() {
 
     unsigned long now = millis();
 
-    // 1) Time is over -> stop
+    // 1) Total time is over -> stop
     if (now - _startTime >= _duration) {
         StopAlert();
         return;
     }
 
-    // 2) Time for the next beep
-    if (now - _lastBeepTime >= _getBeepInterval(_mode)) {
-        _lastBeepTime = now;
-        tone(_buzzerPin, _getFrequency(_mode), _getBeepLength(_mode));
+    // 2) Current note finished -> move to the next one
+    const Note* melody = (_mode == Strong) ? STRONG_MELODY : MODERATE_MELODY;
+    uint8_t len        = (_mode == Strong) ? STRONG_LEN    : MODERATE_LEN;
+
+    if (now - _noteStartTime >= melody[_noteIndex].duration) {
+        _noteIndex = (_noteIndex + 1) % len;   // loop the melody
+        _startNote();
     }
 }
 
-// Private Functions :
+void SoundController::_startNote() {
+    const Note* melody = (_mode == Strong) ? STRONG_MELODY : MODERATE_MELODY;
 
-uint16_t SoundController::_getFrequency(enSoundModes mode) const {
-    return (mode == Strong) ? 1500 : 1000;
-}
+    _noteStartTime = millis();
+    _notePlaying   = true;
 
-uint16_t SoundController::_getBeepLength(enSoundModes mode) const {
-    return (mode == Strong) ? 180 : 150;
-}
+    uint16_t freq = melody[_noteIndex].freq;
 
-// Time from the start of one beep to the start of the next
-uint16_t SoundController::_getBeepInterval(enSoundModes mode) const {
-    return (mode == Strong) ? 300 : 800;
+    if (freq == 0) {
+        noTone(_buzzerPin);          // pause
+    } else {
+        tone(_buzzerPin, freq);      // plays until next note/pause
+    }
 }

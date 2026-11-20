@@ -60,7 +60,7 @@ void playSound(uint16_t sound){
 
     if (currentCase == enSoundCases::Normal && lastSoundCase != enSoundCases::Normal ){
         lastSoundCase = enSoundCases::Normal;
-        soundController.StopAlert();
+        
     }
     else if (currentCase == enSoundCases::Medium && lastSoundCase !=enSoundCases::Medium ){
         lastSoundCase = enSoundCases::Medium;

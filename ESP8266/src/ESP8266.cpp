@@ -2,7 +2,7 @@
 #include <DHT.h>
 #include <ESP8266WiFi.h>
 #include <CoolixAC.h>
-#include "Secret_File.h"
+#include "secrets.h"
 
 #include "KY038.h"
 
@@ -17,7 +17,7 @@ const int DHT_PIN = 4;
 const int IR_PIN  = 5;    
 
 const char* ssid     = My_SSID;
-const char* password = My_PAASSWORD;
+const char* password = MY_PASSWORD;
 
 const char* serverIP = ESP_serverIP;  
 const uint16_t serverPort = 8080;

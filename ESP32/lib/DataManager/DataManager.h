@@ -11,9 +11,9 @@ public:
 
 bool ReceiveData(uint32_t &receiveData, WiFiManager WM);
 
-uint32_t ExtractData(uint32_t data, uint8_t shift, uint8_t mask);
+uint32_t ExtractData(uint32_t data, uint8_t shift, uint16_t mask);
 
-uint32_t InsertData(uint32_t packet, uint32_t data, uint8_t shift);
+uint32_t InsertData(uint32_t packet, uint32_t data, uint16_t shift);
 
 
 
