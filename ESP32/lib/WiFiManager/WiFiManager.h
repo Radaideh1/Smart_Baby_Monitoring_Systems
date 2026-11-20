@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef ESP32
     #include <WiFi.h>
 #elif defined(ESP8266)
