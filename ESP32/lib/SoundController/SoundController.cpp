@@ -1,55 +1,67 @@
 #include "SoundController.h"
 
-
-
-SoundController::SoundController(int buzzer_pin):
-_BuzzerPIn(buzzer_pin) {
-    _startTime = 0; 
-
+SoundController::SoundController(int buzzer_pin)
+    : _buzzerPin(buzzer_pin),
+      _isPlaying(false),
+      _mode(Moderate),
+      _duration(0),
+      _startTime(0),
+      _lastBeepTime(0) {
 }
 
-void SoundController::begin(){
-    pinMode(_BuzzerPIn,OUTPUT);
+void SoundController::begin() {
+    pinMode(_buzzerPin, OUTPUT);
 }
 
+void SoundController::PlayAlert(enSoundModes mode, uint32_t duration) {
+    _mode         = mode;
+    _duration     = duration;
+    _startTime    = millis();
+    _isPlaying    = true;
 
-void SoundController::PlayAlert(enSoundModes mode ,uint32_t time ){
-    _startTime = millis();
-    
-    _AudioSound(mode);
-    _getAudioDuration(time);
+    // Trigger the first beep immediately
+    _lastBeepTime = millis();
+    tone(_buzzerPin, _getFrequency(mode), _getBeepLength(mode));
 }
 
-void SoundController::StopAlert(){
-    noTone(_BuzzerPIn);
+void SoundController::StopAlert() {
+    _isPlaying = false;
+    noTone(_buzzerPin);
 }
 
-
-// Private Function : 
-
-void SoundController::_AudioSound(enSoundModes mode){
-
-    if(mode == enSoundModes::Moderate){
-        tone(_BuzzerPIn, 1000, 150);
-
-    }
-
-    else if (mode == enSoundModes::Strong){
-        tone(_BuzzerPIn, 1500,180);
-
-    }
-
-
+bool SoundController::IsPlaying() const {
+    return _isPlaying;
 }
 
-void SoundController::_getAudioDuration(uint32_t time){
+void SoundController::Update() {
+    if (!_isPlaying) return;
 
-    if (millis() - _startTime >= time ){
+    unsigned long now = millis();
 
+    // 1) Time is over -> stop
+    if (now - _startTime >= _duration) {
         StopAlert();
-
-        _startTime = millis();
+        return;
     }
 
+    // 2) Time for the next beep
+    if (now - _lastBeepTime >= _getBeepInterval(_mode)) {
+        _lastBeepTime = now;
+        tone(_buzzerPin, _getFrequency(_mode), _getBeepLength(_mode));
+    }
+}
 
+// Private Functions :
+
+uint16_t SoundController::_getFrequency(enSoundModes mode) const {
+    return (mode == Strong) ? 1500 : 1000;
+}
+
+uint16_t SoundController::_getBeepLength(enSoundModes mode) const {
+    return (mode == Strong) ? 180 : 150;
+}
+
+// Time from the start of one beep to the start of the next
+uint16_t SoundController::_getBeepInterval(enSoundModes mode) const {
+    return (mode == Strong) ? 300 : 800;
 }

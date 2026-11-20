@@ -1,47 +1,43 @@
-#ifndef SOUNDCONTROLLER_h   
-#define SOUNDCONTROLLER_h
-
+#ifndef SOUNDCONTROLLER_H
+#define SOUNDCONTROLLER_H
 
 #include <Arduino.h>
 
-enum enSoundModes{
+enum enSoundModes {
     Moderate,
     Strong
 };
 
-
-class SoundController{
+class SoundController {
 public:
-
     SoundController(int buzzer_pin);
 
     void begin();
 
-    void PlayAlert(enSoundModes mode ,uint32_t time );
+    // Starts (or restarts) an alert that lasts `duration` ms
+    void PlayAlert(enSoundModes mode, uint32_t duration);
 
+    // Stops the alert immediately
     void StopAlert();
 
-    
-    
-    
-private:
-    const int _BuzzerPIn;
-    
-    unsigned long _startTime;
-    
-    // Private Function : 
-    
-    void _AudioSound(enSoundModes mode);
-    void _getAudioDuration(uint32_t time);
+    // Must be called every loop()
+    void Update();
 
+    bool IsPlaying() const;
+
+private:
+    const int _buzzerPin;
+
+    bool          _isPlaying;
+    enSoundModes  _mode;
+    uint32_t      _duration;
+    unsigned long _startTime;      
+    unsigned long _lastBeepTime;   
+
+    // Per-mode settings
+    uint16_t _getFrequency(enSoundModes mode) const;
+    uint16_t _getBeepLength(enSoundModes mode) const;
+    uint16_t _getBeepInterval(enSoundModes mode) const;
 };
 
-
 #endif
-
-
-
-
-
-
-

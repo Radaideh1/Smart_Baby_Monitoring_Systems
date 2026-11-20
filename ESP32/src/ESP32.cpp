@@ -15,7 +15,7 @@ Non = 0 , Normal = 1  , Medium = 2, High = 3
 // Variables : 
 unsigned long lastWaitPrint = 0;
 enSoundCases lastSoundCase;
-const char* soundCases[3] = {"Normal","Suspicious","Crying"};
+const char* soundCases[4] = {"None", "Normal", "Suspicious", "Crying"};
 
 
 // Objects : 
@@ -120,6 +120,7 @@ void setup() {
 void loop() {
 
     wifiManger.check_TCP_Connection();
+    soundController.Update();
 
     
     uint32_t data;
